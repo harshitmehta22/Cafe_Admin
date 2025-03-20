@@ -21,6 +21,7 @@ import { z as zod } from 'zod';
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
+import axios from 'axios';
 
 const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
@@ -51,20 +52,26 @@ export function SignInForm(): React.JSX.Element {
     async (values: Values): Promise<void> => {
       setIsPending(true);
 
-      const { error } = await authClient.signInWithPassword(values);
+      try {
+        const response = await axios.post(`http://localhost:5000/api/auth/login`, {
+          email: values.email,
+          password: values.password,
+        });
 
-      if (error) {
-        setError('root', { type: 'server', message: error });
+        console.log(response,"coming api repsonse")
+
+        if (response.status === 201) {
+          // await checkSession?.();
+          router.push(paths.auth.signIn); // Redirect to dashboard on success
+        } else {
+          throw new Error('Something went wrong. Please try again.');
+        }
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || 'Signup failed. Please try again.';
+        setError('root', { type: 'server', message: errorMessage });
+      } finally {
         setIsPending(false);
-        return;
       }
-
-      // Refresh the auth state
-      await checkSession?.();
-
-      // UserProvider, for this case, will not refresh the router
-      // After refresh, GuestGuard will handle the redirect
-      router.refresh();
     },
     [checkSession, router, setError]
   );

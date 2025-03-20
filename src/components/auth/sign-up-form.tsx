@@ -21,18 +21,18 @@ import { z as zod } from 'zod';
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { useUser } from '@/hooks/use-user';
-
+import axios from 'axios'
 const schema = zod.object({
-  firstName: zod.string().min(1, { message: 'First name is required' }),
-  lastName: zod.string().min(1, { message: 'Last name is required' }),
+  firstname: zod.string().min(1, { message: 'First name is required' }),
+  lastname: zod.string().min(1, { message: 'Last name is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
   password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
   terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
 });
-
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { firstName: '', lastName: '', email: '', password: '', terms: false } satisfies Values;
+const defaultValues = { firstname: '', lastname: '', email: '', password: '', terms: false } satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
   const router = useRouter();
@@ -52,20 +52,28 @@ export function SignUpForm(): React.JSX.Element {
     async (values: Values): Promise<void> => {
       setIsPending(true);
 
-      const { error } = await authClient.signUp(values);
+      try {
+        const response = await axios.post(`http://localhost:5000/api/auth/signup`, {
+          firstname: values.firstname,
+          lastname: values.lastname,
+          email: values.email,
+          password: values.password,
+        });
 
-      if (error) {
-        setError('root', { type: 'server', message: error });
+        console.log(response,"coming api repsonse")
+
+        if (response.status === 201) {
+          // await checkSession?.();
+          router.push(paths.auth.signIn); // Redirect to dashboard on success
+        } else {
+          throw new Error('Something went wrong. Please try again.');
+        }
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || 'Signup failed. Please try again.';
+        setError('root', { type: 'server', message: errorMessage });
+      } finally {
         setIsPending(false);
-        return;
       }
-
-      // Refresh the auth state
-      await checkSession?.();
-
-      // UserProvider, for this case, will not refresh the router
-      // After refresh, GuestGuard will handle the redirect
-      router.refresh();
     },
     [checkSession, router, setError]
   );
@@ -85,23 +93,23 @@ export function SignUpForm(): React.JSX.Element {
         <Stack spacing={2}>
           <Controller
             control={control}
-            name="firstName"
+            name="firstname"
             render={({ field }) => (
-              <FormControl error={Boolean(errors.firstName)}>
+              <FormControl error={Boolean(errors.firstname)}>
                 <InputLabel>First name</InputLabel>
                 <OutlinedInput {...field} label="First name" />
-                {errors.firstName ? <FormHelperText>{errors.firstName.message}</FormHelperText> : null}
+                {errors.firstname ? <FormHelperText>{errors.firstname.message}</FormHelperText> : null}
               </FormControl>
             )}
           />
           <Controller
             control={control}
-            name="lastName"
+            name="lastname"
             render={({ field }) => (
-              <FormControl error={Boolean(errors.firstName)}>
+              <FormControl error={Boolean(errors.lastname)}>
                 <InputLabel>Last name</InputLabel>
                 <OutlinedInput {...field} label="Last name" />
-                {errors.firstName ? <FormHelperText>{errors.firstName.message}</FormHelperText> : null}
+                {errors.lastname ? <FormHelperText>{errors.lastname.message}</FormHelperText> : null}
               </FormControl>
             )}
           />
