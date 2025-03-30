@@ -30,7 +30,6 @@ const schema = zod.object({
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { email: 'sofia@devias.io', password: 'Secret1' } satisfies Values;
 
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
@@ -46,7 +45,7 @@ export function SignInForm(): React.JSX.Element {
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
+  } = useForm<Values>({ resolver: zodResolver(schema) });
 
   const onSubmit = React.useCallback(
     async (values: Values): Promise<void> => {
@@ -57,12 +56,10 @@ export function SignInForm(): React.JSX.Element {
           email: values.email,
           password: values.password,
         });
-
-        console.log(response,"coming api repsonse")
-
-        if (response.status === 201) {
-          // await checkSession?.();
-          router.push(paths.auth.signIn); // Redirect to dashboard on success
+        if (response.status === 200 && response.data.token) {
+          localStorage.setItem('authToken', response.data.token);
+          await checkSession?.();
+          router.push(paths.dashboard.overview); // Redirect to dashboard on success
         } else {
           throw new Error('Something went wrong. Please try again.');
         }

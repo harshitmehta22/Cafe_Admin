@@ -17,18 +17,21 @@ import Typography from '@mui/material/Typography';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
+import { Button } from '@mui/material';
 
 function noop(): void {
   // do nothing
 }
 
 export interface Customer {
-  id: string;
-  avatar: string;
+  _id: string;
   name: string;
-  email: string;
-  address: { city: string; state: string; country: string; street: string };
-  phone: string;
+  address: string;
+  phonenumber: number;
+  salary: number;
+  joiningdate: Date;
+  idProof: string;
+  photo: string; 
   createdAt: Date;
 }
 
@@ -37,6 +40,8 @@ interface CustomersTableProps {
   page?: number;
   rows?: Customer[];
   rowsPerPage?: number;
+  onUpdate: (_id: string) => void;  // Callback for the Update action
+  onDelete: (id: string) => void;
 }
 
 export function CustomersTable({
@@ -44,9 +49,11 @@ export function CustomersTable({
   rows = [],
   page = 0,
   rowsPerPage = 0,
+  onUpdate,
+  onDelete,
 }: CustomersTableProps): React.JSX.Element {
   const rowIds = React.useMemo(() => {
-    return rows.map((customer) => customer.id);
+    return rows.map((customer) => customer._id);
   }, [rows]);
 
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
@@ -74,42 +81,84 @@ export function CustomersTable({
                 />
               </TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Signed Up</TableCell>
+              <TableCell>address</TableCell>
+              <TableCell>Position</TableCell>
+              <TableCell>Phonenumber</TableCell>
+              <TableCell>Id Proof</TableCell>
+              <TableCell>Photo</TableCell>
+              <TableCell>Salary</TableCell>
+              <TableCell>Join Date</TableCell>
+              <TableCell>Current Date</TableCell>
+              <TableCell>Action</TableCell>
+
             </TableRow>
           </TableHead>
           <TableBody>
             {rows.map((row) => {
-              const isSelected = selected?.has(row.id);
+              const isSelected = selected?.has(row._id);
 
               return (
-                <TableRow hover key={row.id} selected={isSelected}>
+                <TableRow hover key={row._id} selected={isSelected}>
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={isSelected}
                       onChange={(event) => {
                         if (event.target.checked) {
-                          selectOne(row.id);
+                          selectOne(row._id);
                         } else {
-                          deselectOne(row.id);
+                          deselectOne(row._id);
                         }
                       }}
                     />
                   </TableCell>
                   <TableCell>
                     <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      <Avatar src={row.avatar} />
-                      <Typography variant="subtitle2">{row.name}</Typography>
+                      {/* <Avatar src={row.avatar} /> */}
+                      <Typography variant="subtitle2">{row?.name}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{row?.address}</TableCell>
+                  <TableCell>{row?.position}</TableCell>
+
+                  <TableCell>{row?.phone}</TableCell>
+                  <TableCell> {row?.idProof && (
+                      <img
+                        src={row?.idProof} // Assuming it's a URL or base64 string
+                        alt="ID Proof"
+                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                      />
+                    )}</TableCell>
+                     <TableCell> {row?.photo && (
+                      <img
+                        src={row?.photo} // Assuming it's a URL or base64 string
+                        alt="Photo"
+                        style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                      />
+                    )}</TableCell>
+                    <TableCell>{row.salary}</TableCell>
+                    <TableCell>{dayjs(row?.joiningDate).format('MMM D, YYYY')}</TableCell>
+
+
+                  <TableCell>{dayjs(row?.createdAt).format('MMM D, YYYY')}</TableCell>
                   <TableCell>
-                    {row.address.city}, {row.address.state}, {row.address.country}
+                    <Button 
+                      variant="contained" 
+                      color="primary" 
+                      size="small" 
+                      sx={{ mr: 1 }}
+                      onClick={() => onUpdate(row._id)} // Update button
+                    >
+                      Update
+                    </Button>
+                    <Button 
+                      variant="outlined" 
+                      color="error" 
+                      size="small" 
+                      onClick={() => onDelete(row._id)} // Delete button
+                    >
+                      Delete
+                    </Button>
                   </TableCell>
-                  <TableCell>{row.phone}</TableCell>
-                  <TableCell>{dayjs(row.createdAt).format('MMM D, YYYY')}</TableCell>
                 </TableRow>
               );
             })}

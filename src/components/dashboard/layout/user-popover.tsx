@@ -31,18 +31,13 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
   const handleSignOut = React.useCallback(async (): Promise<void> => {
     try {
       const { error } = await authClient.signOut();
-
       if (error) {
         logger.error('Sign out error', error);
         return;
       }
-
-      // Refresh the auth state
+      localStorage.removeItem('authToken');
       await checkSession?.();
-
-      // UserProvider, for this case, will not refresh the router and we need to do it manually
-      router.refresh();
-      // After refresh, AuthGuard will handle the redirect
+      router.push(paths.auth.signIn); // Redirect to sign-in page
     } catch (err) {
       logger.error('Sign out error', err);
     }
