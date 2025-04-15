@@ -26,10 +26,13 @@ function noop(): void {
 export interface Customer {
   _id: string;
   name: string;
+  description: string;
   address: string;
-  phonenumber: number;
+  position: string;
+  count: number;
+  phone: number;
   salary: number;
-  joiningdate: Date;
+  joiningDate: Date;
   idProof: string;
   photo: string; 
   createdAt: Date;
@@ -123,14 +126,14 @@ export function CustomersTable({
                   <TableCell>{row?.phone}</TableCell>
                   <TableCell> {row?.idProof && (
                       <img
-                        src={row?.idProof} // Assuming it's a URL or base64 string
+                        src={row?.idProof} 
                         alt="ID Proof"
                         style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                       />
                     )}</TableCell>
                      <TableCell> {row?.photo && (
                       <img
-                        src={row?.photo} // Assuming it's a URL or base64 string
+                        src={row?.photo}
                         alt="Photo"
                         style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                       />

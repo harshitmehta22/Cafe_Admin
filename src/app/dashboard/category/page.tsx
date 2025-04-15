@@ -11,6 +11,7 @@ import { Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@m
 import axios from 'axios';
 import { CustomersTable } from '@/components/dashboard/customer/customers-table';
 import { Customer } from '@/components/dashboard/customer/customers-table';
+import { CategroyTable } from '@/components/dashboard/categorytable';
 
 export default function Page(): React.JSX.Element {
   const page = 0;
@@ -63,7 +64,7 @@ export default function Page(): React.JSX.Element {
     const category = categories.find((category) => category._id === id);
     if (category) {
       setCategoryName(category.name); // Pre-fill the fields
-      setCategoryDescription(category.description);
+      setCategoryDescription(category?.description);
     }
     setOpen(true);
   };
@@ -131,7 +132,7 @@ export default function Page(): React.JSX.Element {
           </Button>
         </div>
       </Stack>
-      <CustomersTable
+      <CategroyTable
         count={paginatedCustomers.length}
         page={page}
         rows={categories}
